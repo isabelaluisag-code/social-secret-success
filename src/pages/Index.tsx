@@ -4,7 +4,7 @@ import { MessageCircle, Menu, X, CheckCircle, AlertTriangle, ArrowRight, Target,
 import SectionCard from "@/components/SectionCard";
 import MessageCard from "@/components/MessageCard";
 import SideNav from "@/components/SideNav";
-import logoImplementare from "@/assets/logo-implementare.png";
+import logoLegatto from "@/assets/logo-legatto.png";
 
 const navItems = [
   { id: "meta", label: "🎯 Meta diária", number: "🎯" },
@@ -60,11 +60,11 @@ const Index = () => {
               <span className="text-xs font-body hidden sm:inline">Menu</span>
             </Link>
             <div className="h-5 w-px bg-border" />
-            <img src={logoImplementare} alt="Implementare" className="h-8 w-auto" />
+            <img src={logoLegatto} alt="Legatto" className="h-8 w-auto" />
             <div className="h-6 w-px bg-border" />
             <div>
               <h1 className="text-sm font-display font-semibold text-foreground leading-tight">Guia de Mensagens</h1>
-              <p className="text-xs text-muted-foreground font-body">Implementare — Instagram</p>
+              <p className="text-xs text-muted-foreground font-body">Legatto — Instagram</p>
             </div>
           </div>
           <button
@@ -93,7 +93,7 @@ const Index = () => {
         <main className="flex-1 max-w-3xl mx-auto px-4 md:px-8 py-8 space-y-8">
           {/* Hero */}
           <div className="text-center py-6">
-            <img src={logoImplementare} alt="Implementare" className="h-12 mx-auto mb-4" />
+            <img src={logoLegatto} alt="Legatto" className="h-12 mx-auto mb-4" />
             <div className="inline-flex items-center gap-2 bg-coral-light text-primary px-4 py-1.5 rounded-full text-xs font-semibold mb-3">
               <MessageCircle className="w-3.5 h-3.5" /> DOCUMENTO INTERNO
             </div>
@@ -211,9 +211,9 @@ const Index = () => {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="w-7 h-7 rounded-full bg-accent flex items-center justify-center text-accent-foreground text-xs font-bold">2</span>
-                    <p className="text-sm font-semibold text-foreground">Compartilhar a Implementare</p>
+                    <p className="text-sm font-semibold text-foreground">Compartilhar a Legatto</p>
                   </div>
-                  <MessageCard label="Copiar msg 2" message="Aproveitando, compartilho o insta da Implementare com você! Lá a gente posta bastante conteúdo sobre gestão, vendas e estrutura de negócio 👉 https://www.instagram.com/implementare.gestao/" variant="warm" />
+                  <MessageCard label="Copiar msg 2" message="Aproveitando, compartilho o insta da Legatto com você! Lá a gente posta bastante conteúdo sobre gestão, vendas e estrutura de negócio 👉 https://www.instagram.com/legatto/" variant="warm" />
                 </div>
 
                 <div>
@@ -408,8 +408,8 @@ const Index = () => {
 
           {/* Footer */}
           <footer className="text-center py-6 text-xs text-muted-foreground border-t border-border">
-            <img src={logoImplementare} alt="Implementare" className="h-8 mx-auto mb-3 opacity-50" />
-            <p>Documento interno — Implementare Gestão</p>
+            <img src={logoLegatto} alt="Legatto" className="h-8 mx-auto mb-3 opacity-50" />
+            <p>Documento interno — Legatto</p>
           </footer>
         </main>
       </div>
