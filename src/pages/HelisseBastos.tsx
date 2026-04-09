@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -7,6 +7,7 @@ import {
   ArrowLeft, Users, CheckCircle2, Clock, AlertCircle, Search, Plus, X,
   ExternalLink, ChevronRight, BarChart3, Filter, Eye, ChevronDown, Columns3, BookOpen,
   Check, Copy, MessageSquare, Target, TrendingUp, XCircle, Send, CalendarIcon, Save,
+  Upload, FileSpreadsheet, Sparkles,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -19,17 +20,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
-  initialLeads, createCadence, STATUS_CONFIG,
+  initialLeads, createCadence, STATUS_CONFIG, createLeadFromImport,
   type Lead, type LeadStatus, type DiscardReason, type Priority,
 } from "@/data/social-selling-data";
 import logoLegatto from "@/assets/logo-legatto.png";
 import MindMapGuide from "@/components/MindMapGuide";
+import * as XLSX from "xlsx";
 
 const RechartsCharts = lazy(() => import("@/components/LeadershipCharts"));
 
-const STORAGE_KEY = "social-selling-leads-v3";
-const DB_ROW_ID = "helisse-bastos";
+const STORAGE_KEY = "social-selling-leads-v4";
+const DB_ROW_ID = "social-selling-generic";
 
 function loadLeadsFromLocal(): Lead[] {
   try {
@@ -65,7 +68,6 @@ async function saveLeadsToDB(leads: Lead[]) {
   } catch { /* ignore */ }
 }
 
-const NICHOS = ["Todos", "Dermatologia", "Nutrição e Emagrecimento", "Dentista", "Terapeuta e Fisioterapeuta", "Capilar", "Parcerias", "Outros"];
 const ALL_STATUSES: LeadStatus[] = ["novo","em_checagem","dia_1","dia_2","dia_3","dia_4","dia_5","dia_6","abordado","em_followup","respondeu","reuniao","oportunidade","perdido"];
 const DISCARD_OPTIONS: { value: DiscardReason; label: string }[] = [
   { value: null, label: "Nenhum" },
@@ -77,9 +79,7 @@ const DISCARD_OPTIONS: { value: DiscardReason; label: string }[] = [
   { value: "outro", label: "Outro" },
 ];
 
-
-
-const HelisseBastos = () => {
+const SocialSelling = () => {
   const [leads, setLeads] = useState<Lead[]>(loadLeadsFromLocal);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -90,10 +90,18 @@ const HelisseBastos = () => {
   const [kpiDetail, setKpiDetail] = useState<{ label: string; leads: Lead[] } | null>(null);
   const [page, setPage] = useState(0);
   const [dbLoaded, setDbLoaded] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const PAGE_SIZE = 25;
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navigate = useNavigate();
 
-  // Load from database on mount (takes priority over localStorage)
+  // Dynamic nichos from leads
+  const nichos = useMemo(() => {
+    const set = new Set(leads.map(l => l.nicho).filter(Boolean));
+    return ["Todos", ...Array.from(set).sort()];
+  }, [leads]);
+
   useEffect(() => {
     let cancelled = false;
     loadLeadsFromDB().then(dbLeads => {
@@ -101,14 +109,6 @@ const HelisseBastos = () => {
       if (dbLeads && dbLeads.length > 0) {
         setLeads(dbLeads);
         saveLeadsToLocal(dbLeads);
-      } else {
-        // Only push to DB if localStorage has NON-default data (user actually edited something)
-        const local = loadLeadsFromLocal();
-        const hasCustomData = local.some(l => l.status !== "novo" || l.observacoes?.length > 0 || l.cadencia?.some(d => d.completedAt));
-        if (hasCustomData) {
-          saveLeadsToDB(local);
-        }
-        // If no custom data, just use initial leads without overwriting DB
       }
       setDbLoaded(true);
     });
@@ -121,7 +121,6 @@ const HelisseBastos = () => {
     setLeads((prev) => {
       const next = updater(prev);
       saveLeadsToLocal(next);
-      // Debounce DB save to avoid too many requests
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       saveTimerRef.current = setTimeout(() => saveLeadsToDB(next), 500);
       return next;
@@ -162,28 +161,6 @@ const HelisseBastos = () => {
     return s;
   }, [activeLeads, perfisPrivados, dadosErrados]);
 
-  // Projeção de data de conclusão
-  const projecao = useMemo(() => {
-    const HORAS_POR_DIA = 2;
-    const MIN_POR_LEAD_DIA = 15; // minutos médios por lead por dia de cadência
-    const DIAS_CADENCIA = 6;
-    const leadsPerDay = Math.floor((HORAS_POR_DIA * 60) / MIN_POR_LEAD_DIA); // ~8 leads/dia em paralelo
-    const concluidos = activeLeads.filter(l => ["abordado","em_followup","respondeu","reuniao","oportunidade","perdido"].includes(l.status)).length;
-    const pendentes = activeLeads.length - concluidos;
-    const ciclos = Math.ceil(pendentes / leadsPerDay);
-    const diasUteis = ciclos + DIAS_CADENCIA;
-    // Calcular data fim pulando fins de semana
-    const inicio = new Date(2025, 2, 25); // 25/03/2025
-    let diasAdded = 0;
-    const dataFim = new Date(inicio);
-    while (diasAdded < diasUteis) {
-      dataFim.setDate(dataFim.getDate() + 1);
-      const dow = dataFim.getDay();
-      if (dow !== 0 && dow !== 6) diasAdded++;
-    }
-    return { leadsPerDay, pendentes, concluidos, diasUteis, dataFim };
-  }, [activeLeads]);
-
   const copyText = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
@@ -203,7 +180,7 @@ const HelisseBastos = () => {
       aderenteIcp: null,
       motivoDescarte: null,
       status: "novo",
-      responsavel: "Rejane",
+      responsavel: "",
       prioridade: "media",
       resultado: "",
       observacoes: [],
@@ -215,6 +192,162 @@ const HelisseBastos = () => {
     setShowNewLead(false);
   };
 
+  // Import from Excel/CSV
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json<Record<string, any>>(sheet);
+
+      if (rows.length === 0) {
+        toast.error("A planilha está vazia.");
+        setImporting(false);
+        return;
+      }
+
+      // Map common Growman column names
+      const mapRow = (row: Record<string, any>) => {
+        const get = (keys: string[]) => {
+          for (const k of keys) {
+            const val = row[k] || row[k.toLowerCase()] || row[k.toUpperCase()];
+            if (val) return String(val);
+          }
+          return "";
+        };
+        return {
+          nome: get(["Full name", "Full Name", "fullName", "Nome", "nome", "Name", "name"]),
+          username: get(["User name", "User Name", "username", "Username", "Instagram", "instagram", "user_name"]),
+          bio: get(["Bio", "bio", "Biografia", "biografia"]),
+          categoria: get(["Category", "category", "Categoria", "categoria"]),
+          cidade: get(["City", "city", "Cidade", "cidade"]),
+          email: get(["Email", "email", "E-mail", "e-mail"]),
+          telefone: get(["Phone", "phone", "Telefone", "telefone"]),
+          followers: get(["Followers", "followers", "Seguidores", "seguidores"]),
+        };
+      };
+
+      const newLeads = rows.map((row, i) => {
+        const mapped = mapRow(row);
+        return createLeadFromImport({
+          nome: mapped.nome,
+          username: mapped.username,
+          bio: mapped.bio,
+          nicho: mapped.categoria,
+        }, i);
+      });
+
+      persistLeads((prev) => [...newLeads, ...prev]);
+      toast.success(`${newLeads.length} leads importados com sucesso! 🎉`);
+
+      // Also upload to storage for backup
+      const fileName = `${Date.now()}_${file.name}`;
+      await supabase.storage.from("planilhas").upload(fileName, file);
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao processar a planilha. Verifique o formato.");
+    }
+
+    setImporting(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  // Empty state
+  const isEmpty = leads.length === 0;
+
+  if (isEmpty) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-border">
+          <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                <ArrowLeft className="w-4 h-4" />
+              </Link>
+              <img src={logoLegatto} alt="Legatto" className="h-10 w-auto" />
+              <div>
+                <p className="text-sm font-semibold text-foreground leading-tight font-body">Rotina de Social Selling</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-8">
+          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+            <Users className="w-10 h-10 text-primary" />
+          </div>
+          <div className="space-y-3">
+            <h1 className="text-2xl font-bold text-foreground font-body">Sua rotina de Social Selling começa aqui!</h1>
+            <p className="text-muted-foreground font-body max-w-md mx-auto">
+              Para começar, importe sua planilha de clientes ideais. Siga o passo a passo no guia "Como Utilizar" para extrair seus leads e depois faça o upload aqui.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              onChange={handleImport}
+              className="hidden"
+            />
+            <Button
+              size="lg"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="gap-2 font-body text-base px-8"
+            >
+              {importing ? (
+                <><Clock className="w-5 h-5 animate-spin" /> Importando...</>
+              ) : (
+                <><Upload className="w-5 h-5" /> Importar planilha de leads</>
+              )}
+            </Button>
+
+            <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+              <span>ou</span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button variant="outline" onClick={() => setShowNewLead(true)} className="gap-2 font-body">
+                <Plus className="w-4 h-4" /> Adicionar lead manualmente
+              </Button>
+              <Link to="/como-utilizar">
+                <Button variant="ghost" className="gap-2 font-body text-primary">
+                  <BookOpen className="w-4 h-4" /> Ver guia "Como Utilizar"
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-5 text-left max-w-lg mx-auto">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-foreground font-body">Como funciona?</span>
+            </div>
+            <ol className="space-y-2 text-sm text-muted-foreground font-body">
+              <li className="flex items-start gap-2"><span className="font-bold text-primary">1.</span> Extraia seguidores com o Growman</li>
+              <li className="flex items-start gap-2"><span className="font-bold text-primary">2.</span> Filtre no ChatGPT para deixar apenas seu cliente ideal</li>
+              <li className="flex items-start gap-2"><span className="font-bold text-primary">3.</span> Faça o upload da planilha aqui</li>
+              <li className="flex items-start gap-2"><span className="font-bold text-primary">4.</span> Gerencie sua cadência de abordagem!</li>
+            </ol>
+          </div>
+        </div>
+
+        {/* New Lead Dialog (also available from empty state) */}
+        <Dialog open={showNewLead} onOpenChange={setShowNewLead}>
+          <DialogContent className="max-w-md">
+            <DialogHeader><DialogTitle className="font-body">Novo Lead</DialogTitle></DialogHeader>
+            <NewLeadForm onSubmit={addNewLead} onCancel={() => setShowNewLead(false)} nichos={nichos} />
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -227,13 +360,25 @@ const HelisseBastos = () => {
             </Link>
             <img src={logoLegatto} alt="Legatto" className="h-10 w-auto" />
             <div>
-              <p className="text-sm font-semibold text-foreground leading-tight font-body">Gestão de Social Selling</p>
-              <p className="text-[11px] text-muted-foreground font-body">Helisse Bastos · Operacional: Rejane</p>
+              <p className="text-sm font-semibold text-foreground leading-tight font-body">Rotina de Social Selling</p>
+              <p className="text-[11px] text-muted-foreground font-body">{leads.length} leads carregados</p>
             </div>
           </div>
-          <Button size="sm" onClick={() => setShowNewLead(true)} className="gap-1">
-            <Plus className="w-4 h-4" /> Novo Lead
-          </Button>
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              onChange={handleImport}
+              className="hidden"
+            />
+            <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="gap-1 font-body">
+              <Upload className="w-4 h-4" /> {importing ? "Importando..." : "Importar"}
+            </Button>
+            <Button size="sm" onClick={() => setShowNewLead(true)} className="gap-1">
+              <Plus className="w-4 h-4" /> Novo Lead
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -308,26 +453,6 @@ const HelisseBastos = () => {
               </DialogContent>
             </Dialog>
 
-            {/* Projeção */}
-            <div className="bg-card border border-border rounded-lg p-4 flex flex-wrap items-center gap-4 text-sm font-body">
-              <div className="flex items-center gap-2">
-                <CalendarIcon className="w-4 h-4 text-primary" />
-                <span className="font-semibold text-foreground">Projeção de conclusão</span>
-              </div>
-              <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> 2h/dia</span>
-                <span className="flex items-center gap-1"><Users className="w-3 h-3" /> ~{projecao.leadsPerDay} leads/dia</span>
-                <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-emerald-500" /> {projecao.concluidos} concluídos</span>
-                <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-amber-500" /> {projecao.pendentes} pendentes</span>
-                <span className="flex items-center gap-1"><CalendarIcon className="w-3 h-3" /> ~{projecao.diasUteis} dias úteis</span>
-              </div>
-              <div className="ml-auto">
-                <Badge className="font-body text-xs bg-primary/10 text-primary border-primary/30">
-                  Previsão: {projecao.dataFim.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })}
-                </Badge>
-              </div>
-            </div>
-
             <div className="flex flex-wrap gap-2 items-center">
               <div className="relative flex-1 min-w-[200px] max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -343,7 +468,7 @@ const HelisseBastos = () => {
               <Select value={filterNicho} onValueChange={setFilterNicho}>
                 <SelectTrigger className="w-[180px] font-body"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {NICHOS.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+                  {nichos.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
                 </SelectContent>
               </Select>
               <span className="text-xs text-muted-foreground font-body">{filtered.length} leads</span>
@@ -380,7 +505,7 @@ const HelisseBastos = () => {
                             </span>
                           </td>
                           <td className="px-3 py-2.5">
-                            <span className={`text-xs font-body flex items-center gap-1 ${lead.prioridade === "alta" ? "text-destructive" : lead.prioridade === "baixa" ? "text-muted-foreground" : "text-muted-foreground"}`}>
+                            <span className={`text-xs font-body flex items-center gap-1 ${lead.prioridade === "alta" ? "text-destructive" : "text-muted-foreground"}`}>
                               <span className={`w-2 h-2 rounded-full inline-block ${lead.prioridade === "alta" ? "bg-destructive" : lead.prioridade === "baixa" ? "bg-muted" : "bg-accent"}`} /> {lead.prioridade}
                             </span>
                           </td>
@@ -523,7 +648,7 @@ const HelisseBastos = () => {
       <Dialog open={showNewLead} onOpenChange={setShowNewLead}>
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle className="font-body">Novo Lead</DialogTitle></DialogHeader>
-          <NewLeadForm onSubmit={addNewLead} onCancel={() => setShowNewLead(false)} />
+          <NewLeadForm onSubmit={addNewLead} onCancel={() => setShowNewLead(false)} nichos={nichos} />
         </DialogContent>
       </Dialog>
     </div>
@@ -549,11 +674,9 @@ function LeadDetail({ lead, onUpdate, onCopy, copiedId }: {
   const generateAiComment = async (dayIdx: number) => {
     setAiLoading(prev => ({ ...prev, [dayIdx]: true }));
     try {
-      // Collect all saved observations from all days
       const observations = lead.cadencia
         .filter(d => (d.observationHistory?.length > 0))
         .flatMap(d => d.observationHistory.map(o => `Dia ${d.day}: ${o}`));
-      // Also include general observations
       const allObs = [...lead.observacoes, ...observations];
 
       const { data, error } = await supabase.functions.invoke("generate-comment", {
@@ -599,7 +722,6 @@ function LeadDetail({ lead, onUpdate, onCopy, copiedId }: {
 
   const setDayExecutionDate = (dayIdx: number, date: Date | undefined) => {
     const newCadencia = lead.cadencia.map((d, di) => di === dayIdx ? { ...d, executionDate: date ? date.toISOString().split("T")[0] : null } : d);
-    // Auto-update status to match the cadence day being worked on
     const dayNumber = lead.cadencia[dayIdx]?.day ?? (dayIdx + 1);
     const cadenceStatus = `dia_${dayNumber}` as LeadStatus;
     const statusUpdate: Partial<Lead> = { cadencia: newCadencia };
@@ -628,9 +750,11 @@ function LeadDetail({ lead, onUpdate, onCopy, copiedId }: {
             <h2 className="text-lg font-bold font-body text-foreground">{lead.nome}</h2>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-sm text-muted-foreground font-body">@{lead.instagram}</span>
-              <a href={lead.linkPerfil} target="_blank" rel="noreferrer" className="text-primary hover:underline">
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+              {lead.linkPerfil && (
+                <a href={lead.linkPerfil} target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
             </div>
           </div>
           <span className={`px-2.5 py-1 rounded-full text-xs font-semibold font-body ${sc.color} ${sc.bg}`}>
@@ -677,7 +801,7 @@ function LeadDetail({ lead, onUpdate, onCopy, copiedId }: {
           </div>
           <div className="flex items-center gap-2">
             <Checkbox checked={lead.bioOk === true} onCheckedChange={(c) => onUpdate({ bioOk: !!c })} />
-            <span className="text-xs font-body">O nome e a profissão estão certos?</span>
+            <span className="text-xs font-body">Dados conferidos?</span>
           </div>
         </div>
 
@@ -694,7 +818,7 @@ function LeadDetail({ lead, onUpdate, onCopy, copiedId }: {
         )}
       </div>
 
-      {/* Bio & Keywords */}
+      {/* Bio */}
       {lead.bio && (
         <div className="space-y-2">
           <h3 className="text-xs font-bold text-muted-foreground font-body uppercase tracking-wide">Bio</h3>
@@ -704,7 +828,7 @@ function LeadDetail({ lead, onUpdate, onCopy, copiedId }: {
 
       {lead.postKeywords && (
         <div className="space-y-2">
-          <h3 className="text-xs font-bold text-muted-foreground font-body uppercase tracking-wide">Palavras-chave dos posts</h3>
+          <h3 className="text-xs font-bold text-muted-foreground font-body uppercase tracking-wide">Palavras-chave</h3>
           <div className="flex flex-wrap gap-1">
             {lead.postKeywords.split(",").map((k, i) => (
               <Badge key={i} variant="secondary" className="text-[10px] font-body">{k.trim()}</Badge>
@@ -713,8 +837,7 @@ function LeadDetail({ lead, onUpdate, onCopy, copiedId }: {
         </div>
       )}
 
-
-      {/* Observações (tags) */}
+      {/* Observações */}
       <div className="space-y-2">
         <h3 className="text-xs font-bold text-muted-foreground font-body uppercase tracking-wide">Observações</h3>
         {lead.observacoes.length > 0 && (
@@ -729,7 +852,7 @@ function LeadDetail({ lead, onUpdate, onCopy, copiedId }: {
         )}
         <div className="flex gap-2">
           <Input value={obsInput} onChange={e => setObsInput(e.target.value)} placeholder="Adicionar observação..." className="text-xs font-body h-8" onKeyDown={e => { if (e.key === "Enter") { addObs(); (e.target as HTMLInputElement).blur(); } }} />
-          <Button size="sm" variant="outline" onClick={() => { addObs(); }} className="h-8 font-body text-xs">Salvar</Button>
+          <Button size="sm" variant="outline" onClick={addObs} className="h-8 font-body text-xs">Salvar</Button>
         </div>
       </div>
 
@@ -855,7 +978,7 @@ function LeadDetail({ lead, onUpdate, onCopy, copiedId }: {
                       </Button>
                     </div>
 
-                    {/* Comentário Estratégico com IA */}
+                    {/* AI Comment */}
                     <div className="space-y-1.5 mt-3 border-t border-border pt-3">
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-semibold text-muted-foreground font-body uppercase tracking-wide">💡 Comentário Estratégico (IA)</span>
@@ -867,13 +990,9 @@ function LeadDetail({ lead, onUpdate, onCopy, copiedId }: {
                           className="h-7 text-[11px] font-body gap-1"
                         >
                           {aiLoading[dayIdx] ? (
-                            <>
-                              <Clock className="w-3 h-3 animate-spin" /> Gerando...
-                            </>
+                            <><Clock className="w-3 h-3 animate-spin" /> Gerando...</>
                           ) : (
-                            <>
-                              <TrendingUp className="w-3 h-3" /> Gerar comentário
-                            </>
+                            <><TrendingUp className="w-3 h-3" /> Gerar comentário</>
                           )}
                         </Button>
                       </div>
@@ -895,12 +1014,12 @@ function LeadDetail({ lead, onUpdate, onCopy, copiedId }: {
 }
 
 /* ═══════ NEW LEAD FORM ═══════ */
-function NewLeadForm({ onSubmit, onCancel }: { onSubmit: (data: any) => void; onCancel: () => void }) {
+function NewLeadForm({ onSubmit, onCancel, nichos }: { onSubmit: (data: any) => void; onCancel: () => void; nichos: string[] }) {
   const [nome, setNome] = useState("");
   const [instagram, setInstagram] = useState("");
   const [linkPerfil, setLinkPerfil] = useState("");
   const [empresa, setEmpresa] = useState("");
-  const [nicho, setNicho] = useState("Outros");
+  const [nicho, setNicho] = useState("Geral");
 
   return (
     <div className="space-y-3">
@@ -922,10 +1041,7 @@ function NewLeadForm({ onSubmit, onCancel }: { onSubmit: (data: any) => void; on
       </div>
       <div>
         <label className="text-xs text-muted-foreground font-body">Nicho</label>
-        <Select value={nicho} onValueChange={setNicho}>
-          <SelectTrigger className="mt-1 font-body"><SelectValue /></SelectTrigger>
-          <SelectContent>{NICHOS.filter(n => n !== "Todos").map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
-        </Select>
+        <Input value={nicho} onChange={e => setNicho(e.target.value)} placeholder="Ex: Coaches, E-commerce, Saúde..." className="mt-1 font-body" />
       </div>
       <div className="flex gap-2 pt-2">
         <Button onClick={() => { if (nome.trim()) onSubmit({ nome, instagram, linkPerfil, empresa, nicho }); }} className="flex-1 font-body">Adicionar</Button>
@@ -935,4 +1051,4 @@ function NewLeadForm({ onSubmit, onCancel }: { onSubmit: (data: any) => void; on
   );
 }
 
-export default HelisseBastos;
+export default SocialSelling;
