@@ -11,15 +11,8 @@ const menuItems = [
     color: "bg-primary/10 text-primary",
   },
   {
-    title: "Social Selling — Seguidores Março 2025",
-    description: "Guia de mensagens para abordagem de seguidores existentes no Instagram. Meta: 97 seguidores/dia.",
-    icon: MessageCircle,
-    href: "/guia-mensagens",
-    color: "bg-primary/10 text-primary",
-  },
-  {
-    title: "Social Selling — Helisse Bastos",
-    description: "Operacional da Rejane: 129 leads qualificados divididos em 5 dias com cadência personalizada e scripts editáveis.",
+    title: "Rotina de Social Selling",
+    description: "",
     icon: Users,
     href: "/helisse-bastos",
     color: "bg-accent/10 text-accent",
