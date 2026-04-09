@@ -24,7 +24,7 @@ const Home = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b border-border bg-card/90 backdrop-blur-md">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center gap-3">
-          <img src={logoLegatto} alt="Legatto" className="h-7 w-auto" />
+          <img src={logoLegatto} alt="Legatto" className="h-12 w-auto" />
           <div className="h-5 w-px bg-border" />
           <p className="text-sm font-semibold text-foreground font-body">Painel de Operações</p>
         </div>
@@ -33,7 +33,7 @@ const Home = () => {
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="max-w-lg w-full space-y-4">
           <div className="text-center mb-8">
-            <img src={logoLegatto} alt="Legatto" className="h-12 mx-auto mb-4" />
+            <img src={logoLegatto} alt="Legatto" className="h-20 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-foreground mb-1">Legatto</h1>
             <p className="text-sm text-muted-foreground font-body">Selecione um módulo para acessar</p>
           </div>

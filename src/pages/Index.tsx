@@ -60,7 +60,7 @@ const Index = () => {
               <span className="text-xs font-body hidden sm:inline">Menu</span>
             </Link>
             <div className="h-5 w-px bg-border" />
-            <img src={logoLegatto} alt="Legatto" className="h-8 w-auto" />
+            <img src={logoLegatto} alt="Legatto" className="h-14 w-auto" />
             <div className="h-6 w-px bg-border" />
             <div>
               <h1 className="text-sm font-display font-semibold text-foreground leading-tight">Guia de Mensagens</h1>
@@ -93,7 +93,7 @@ const Index = () => {
         <main className="flex-1 max-w-3xl mx-auto px-4 md:px-8 py-8 space-y-8">
           {/* Hero */}
           <div className="text-center py-6">
-            <img src={logoLegatto} alt="Legatto" className="h-12 mx-auto mb-4" />
+            <img src={logoLegatto} alt="Legatto" className="h-20 mx-auto mb-4" />
             <div className="inline-flex items-center gap-2 bg-coral-light text-primary px-4 py-1.5 rounded-full text-xs font-semibold mb-3">
               <MessageCircle className="w-3.5 h-3.5" /> DOCUMENTO INTERNO
             </div>
@@ -408,7 +408,7 @@ const Index = () => {
 
           {/* Footer */}
           <footer className="text-center py-6 text-xs text-muted-foreground border-t border-border">
-            <img src={logoLegatto} alt="Legatto" className="h-8 mx-auto mb-3 opacity-50" />
+            <img src={logoLegatto} alt="Legatto" className="h-14 mx-auto mb-3 opacity-50" />
             <p>Documento interno — Legatto</p>
           </footer>
         </main>
