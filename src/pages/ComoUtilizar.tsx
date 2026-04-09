@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Download, Search, Target, Lightbulb, ExternalLink, Users, Instagram } from "lucide-react";
+import { ArrowLeft, Download, Search, Target, Lightbulb, ExternalLink, Users, Instagram, MousePointerClick, Play, FileDown, Upload, Sparkles } from "lucide-react";
 import logoLegatto from "@/assets/logo-legatto.png";
+import growmanStep1 from "@/assets/growman-step1.png";
+import growmanStep2 from "@/assets/growman-step2.png";
+import growmanStep3 from "@/assets/growman-step3.png";
 
 const ComoUtilizar = () => {
   return (
@@ -85,6 +88,92 @@ const ComoUtilizar = () => {
           <div className="flex items-center gap-2 bg-muted/50 border border-border rounded-lg px-4 py-3">
             <Search className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground font-body">Ex: "mentoria para mentores", "mastermind empresarial"...</span>
+          </div>
+        </div>
+
+        {/* Step 4 - Ativar extensão */}
+        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-accent/10 text-accent flex items-center justify-center font-bold text-lg">4</div>
+            <h2 className="text-lg font-bold text-foreground font-body">Ative a extensão no perfil</h2>
+          </div>
+          <p className="text-sm text-muted-foreground font-body leading-relaxed">
+            Após encontrar o perfil desejado, <strong className="text-foreground">clique no ícone da extensão Growman</strong> no canto superior direito do Chrome para ativá-la. Ela abrirá um painel lateral onde você poderá configurar a extração.
+          </p>
+          <div className="rounded-lg overflow-hidden border border-border">
+            <img src={growmanStep1} alt="Perfil do Instagram para extração" className="w-full h-auto" />
+          </div>
+          <p className="text-xs text-muted-foreground font-body italic">
+            Acesse o perfil do qual deseja extrair os seguidores e clique na extensão.
+          </p>
+        </div>
+
+        {/* Step 5 - Configurar e iniciar */}
+        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-lg">5</div>
+            <h2 className="text-lg font-bold text-foreground font-body">Configure e clique em "Iniciar"</h2>
+          </div>
+          <p className="text-sm text-muted-foreground font-body leading-relaxed">
+            No painel da extensão, digite o <strong className="text-foreground">@</strong> do perfil alvo, ative a opção <strong className="text-foreground">"Detalhado"</strong> para obter mais informações e clique no botão verde <strong className="text-foreground">"INICIAR"</strong>. A extensão começará a extrair os contatos automaticamente.
+          </p>
+          <div className="rounded-lg overflow-hidden border border-border">
+            <img src={growmanStep2} alt="Painel do Growman com botão Iniciar" className="w-full h-auto" />
+          </div>
+          <div className="flex items-start gap-2 bg-muted/50 border border-border rounded-lg px-4 py-3">
+            <Play className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+            <span className="text-sm text-muted-foreground font-body">Clique em <strong className="text-foreground">INICIAR</strong> e aguarde a extração dos seguidores.</span>
+          </div>
+        </div>
+
+        {/* Step 6 - Exportar para Excel */}
+        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-accent/10 text-accent flex items-center justify-center font-bold text-lg">6</div>
+            <h2 className="text-lg font-bold text-foreground font-body">Exporte para Excel</h2>
+          </div>
+          <p className="text-sm text-muted-foreground font-body leading-relaxed">
+            Após a extração, clique no botão <strong className="text-foreground">"EXPORTAR PERFIL PARA EXCEL"</strong> para baixar a planilha com todos os dados dos seguidores extraídos.
+          </p>
+          <div className="rounded-lg overflow-hidden border border-border">
+            <img src={growmanStep3} alt="Tela de exportação do Growman" className="w-full h-auto" />
+          </div>
+          <div className="flex items-start gap-2 bg-muted/50 border border-border rounded-lg px-4 py-3">
+            <FileDown className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+            <span className="text-sm text-muted-foreground font-body">Clique em <strong className="text-foreground">"EXPORTAR PERFIL PARA EXCEL"</strong> para baixar a planilha.</span>
+          </div>
+        </div>
+
+        {/* Step 7 - Filtrar com IA */}
+        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-lg">7</div>
+            <h2 className="text-lg font-bold text-foreground font-body">Filtre com Inteligência Artificial</h2>
+          </div>
+          <p className="text-sm text-muted-foreground font-body leading-relaxed">
+            Suba a planilha exportada no <strong className="text-foreground">ChatGPT</strong> (ou outra IA) e peça para filtrar apenas os perfis que são seus clientes ideais. Isso vai organizar sua lista e deixar sua prospecção muito mais assertiva!
+          </p>
+
+          <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground font-body">
+              <Sparkles className="w-4 h-4 text-primary" />
+              Prompt exemplo
+            </div>
+            <div className="bg-background border border-border rounded-lg p-4">
+              <p className="text-sm text-foreground font-body italic leading-relaxed">
+                "Na planilha anexada, deixe apenas <strong className="text-primary">[seu cliente ideal]</strong> o restante exclua e me reenvie em Excel!"
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground font-body">
+              Substitua <strong className="text-foreground">[seu cliente ideal]</strong> pelo perfil que você deseja prospectar. Ex: "mentores", "coaches", "donos de e-commerce", etc.
+            </p>
+          </div>
+
+          <div className="flex items-start gap-2 bg-primary/5 border border-primary/20 rounded-lg px-4 py-3">
+            <Upload className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+            <span className="text-sm text-muted-foreground font-body">
+              Assim, a IA já organiza tudo pra você e te leva para um <strong className="text-foreground">caminho mais assertivo</strong>! 🎯
+            </span>
           </div>
         </div>
 
