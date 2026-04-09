@@ -1,11 +1,47 @@
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Download, Search, Target, Lightbulb, ExternalLink, Users, Instagram, MousePointerClick, Play, FileDown, Upload, Sparkles } from "lucide-react";
+import { ArrowLeft, Download, Search, Target, Lightbulb, ExternalLink, Users, Instagram, MousePointerClick, Play, FileDown, Upload, Sparkles, FileSpreadsheet, CheckCircle2, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import logoLegatto from "@/assets/logo-legatto.png";
 import growmanStep1 from "@/assets/growman-step1.png";
 import growmanStep2 from "@/assets/growman-step2.png";
 import growmanStep3 from "@/assets/growman-step3.png";
 
 const ComoUtilizar = () => {
+  const [uploading, setUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = [
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-excel",
+      "text/csv",
+    ];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Por favor, envie um arquivo Excel (.xlsx, .xls) ou CSV.");
+      return;
+    }
+
+    setUploading(true);
+    const fileName = `${Date.now()}_${file.name}`;
+    const { error } = await supabase.storage
+      .from("planilhas")
+      .upload(fileName, file);
+
+    if (error) {
+      toast.error("Erro ao enviar o arquivo. Tente novamente.");
+      console.error(error);
+    } else {
+      setUploadedFile(file.name);
+      toast.success("Planilha enviada com sucesso! 🎉");
+    }
+    setUploading(false);
+  };
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b border-border bg-card/90 backdrop-blur-md sticky top-0 z-50">
@@ -188,6 +224,55 @@ const ComoUtilizar = () => {
           <p className="text-sm text-muted-foreground font-body leading-relaxed">
             Puxar os <strong className="text-foreground">seguidores do seu concorrente</strong> também é uma jogada de mestre! 🎯 Esses seguidores já demonstraram interesse no tipo de serviço que você oferece, tornando-os leads altamente qualificados.
           </p>
+        </div>
+
+        {/* Upload Section */}
+        <div className="bg-card border-2 border-dashed border-primary/30 rounded-xl p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+              <FileSpreadsheet className="w-5 h-5" />
+            </div>
+            <h2 className="text-lg font-bold text-foreground font-body">Hora da mágica! ✨</h2>
+          </div>
+          <p className="text-sm text-muted-foreground font-body leading-relaxed">
+            Após fazer a filtragem com a IA, <strong className="text-foreground">faça o upload da planilha aqui</strong> que a mágica irá acontecer!
+          </p>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            onChange={handleUpload}
+            className="hidden"
+          />
+
+          {uploadedFile ? (
+            <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-lg px-5 py-4">
+              <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-foreground font-body">Arquivo enviado!</p>
+                <p className="text-xs text-muted-foreground font-body">{uploadedFile}</p>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="w-full flex items-center justify-center gap-3 bg-primary text-primary-foreground px-6 py-4 rounded-lg text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-5 h-5" />
+                  Fazer upload da planilha
+                </>
+              )}
+            </button>
+          )}
         </div>
       </main>
 
