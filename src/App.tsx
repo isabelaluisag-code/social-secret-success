@@ -7,7 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "./pages/Home.tsx";
 
 const Index = lazy(() => import("./pages/Index.tsx"));
-const HelisseBastos = lazy(() => import("./pages/HelisseBastos.tsx"));
+const SocialSelling = lazy(() => import("./pages/HelisseBastos.tsx"));
 const ComoUtilizar = lazy(() => import("./pages/ComoUtilizar.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
