@@ -8,6 +8,7 @@ import Home from "./pages/Home.tsx";
 
 const Index = lazy(() => import("./pages/Index.tsx"));
 const HelisseBastos = lazy(() => import("./pages/HelisseBastos.tsx"));
+const ComoUtilizar = lazy(() => import("./pages/ComoUtilizar.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/" element={<Home />} />
             <Route path="/guia-mensagens" element={<Index />} />
             <Route path="/helisse-bastos" element={<HelisseBastos />} />
+            <Route path="/como-utilizar" element={<ComoUtilizar />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
