@@ -49,7 +49,7 @@ const Home = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground font-body">{item.title}</p>
-                <p className="text-xs text-muted-foreground font-body mt-0.5">{item.description}</p>
+                {item.description && <p className="text-xs text-muted-foreground font-body mt-0.5">{item.description}</p>}
               </div>
               <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
             </Link>
