@@ -13,19 +13,19 @@ const BRANCHES = [
   },
   {
     id: "observar", label: "O que Observar", icon: <Eye className="w-4 h-4" />, bg: "bg-emerald-400", text: "text-white",
-    items: ["Filhos e família", "Rotina pessoal", "Rotina da clínica", "Equipe", "Bastidores", "Viagens / Lazer", "Teatro / Cultura / Hobbies", "Datas especiais", "Causas e valores", "Reclamações indiretas", "Posts sobre cansaço ou gestão"],
+    items: ["Família e rotina pessoal", "Rotina profissional", "Equipe / sócios", "Bastidores do negócio", "Viagens / Lazer / Hobbies", "Datas especiais", "Causas e valores", "Reclamações ou desabafos", "Posts sobre cansaço ou sobrecarga"],
   },
   {
     id: "interpretar", label: "Como Interpretar", icon: <Lightbulb className="w-4 h-4" />, bg: "bg-amber-400", text: "text-white",
-    items: ["Rotina dela", "Prioridades", "Estilo de vida", "Momento profissional", "Dores ocultas", "Linguagem ideal de abordagem"],
+    items: ["Rotina dele(a)", "Prioridades do negócio", "Estilo de vida", "Momento profissional", "Dores ocultas", "Linguagem ideal de abordagem"],
   },
   {
     id: "icp", label: "Cruzamento com ICP", icon: <Target className="w-4 h-4" />, bg: "bg-rose-400", text: "text-white",
-    items: ["Sobrecarga", "Centralização", "Dificuldade com equipe", "Falta de processo", "Dificuldade em vendas", "Medo de crescer", "Necessidade de controle", "Desejo por autonomia"],
+    items: ["Sobrecarga", "Centralização", "Dificuldade com equipe", "Falta de processo", "Dificuldade em vendas", "Desejo de crescer", "Necessidade de organização", "Desejo por mais tempo livre"],
   },
   {
     id: "links", label: "Links de Contato", icon: <Heart className="w-4 h-4" />, bg: "bg-violet-400", text: "text-white",
-    items: ["Afinidade por rotina", "Afinidade por maternidade", "Afinidade por cultura", "Afinidade por bastidores", "Afinidade por gestão", "Afinidade por desafios do dia a dia"],
+    items: ["Afinidade por rotina", "Afinidade por família", "Afinidade por hobbies", "Afinidade por bastidores", "Afinidade por desafios do negócio", "Afinidade por crescimento"],
   },
   {
     id: "abordagem", label: "Observação → Ação", icon: <MessageSquare className="w-4 h-4" />, bg: "bg-teal-400", text: "text-white",
@@ -43,20 +43,18 @@ const BRANCHES = [
 
 const EXAMPLES = [
   { obs: "Tem filhos", leitura: "Rotina corrida, valoriza organização", link: "Conteúdo sobre gestão do tempo" },
-  { obs: "Foi ao teatro", leitura: "Repertório cultural, sofisticação", link: "Abordagem mais refinada" },
-  { obs: "Reclama da equipe", leitura: "Dor de gestão", link: "Conversa sobre processos" },
-  { obs: "Mostra bastidores", leitura: "Orgulho da operação", link: "Elogio genuíno" },
-  { obs: "Sobrecarregada", leitura: "Centralização, dor ativa", link: "Empatia + estrutura" },
+  { obs: "Postou sobre viagem", leitura: "Valoriza qualidade de vida", link: "Abordagem sobre liberdade e equilíbrio" },
+  { obs: "Reclama de falta de tempo", leitura: "Dor de gestão / sobrecarga", link: "Conversa sobre processos e delegação" },
+  { obs: "Mostra bastidores", leitura: "Orgulho da operação", link: "Elogio genuíno ao trabalho" },
+  { obs: "Sobrecarregada(o)", leitura: "Centralização, dor ativa", link: "Empatia + solução prática" },
 ];
 
 /* ─── Branch Column Component ─── */
 const BranchColumn = ({ branch, side }: { branch: typeof BRANCHES[0]; side: "left" | "right" }) => (
   <div className={`flex items-start gap-2 ${side === "left" ? "flex-row-reverse" : "flex-row"}`}>
-    {/* Connector line */}
     <div className="flex flex-col items-center pt-3">
       <div className={`w-8 h-0.5 ${branch.bg}`} />
     </div>
-    {/* Branch content */}
     <div className="flex-1 min-w-0">
       <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full ${branch.bg} ${branch.text} text-xs font-bold font-body shadow-sm mb-1.5`}>
         {branch.icon}
@@ -88,36 +86,32 @@ const MindMapGuide = () => {
         <div className="p-4 border-b border-border bg-muted/20 flex items-center justify-between">
           <h2 className="text-sm font-bold font-body text-foreground flex items-center gap-2">
             <Search className="w-4 h-4 text-primary" />
-            Mapa Mental — Análise de Perfil
+            Mapa Mental — Como Analisar o Perfil do Seu Cliente Ideal
           </h2>
-          <Badge variant="outline" className="text-[10px] font-body">Guia Operacional</Badge>
+          <Badge variant="outline" className="text-[10px] font-body">Guia para Empreendedoras</Badge>
         </div>
 
         <div className="p-4 md:p-6 overflow-x-auto">
           <div className="min-w-[700px] grid grid-cols-[1fr_auto_1fr] gap-4 items-start">
-            {/* Left branches */}
             <div className="space-y-5 pt-2">
               {leftBranches.map(b => (
                 <BranchColumn key={b.id} branch={b} side="left" />
               ))}
             </div>
 
-            {/* Center node */}
             <div className="flex flex-col items-center justify-center pt-16">
               <div className="w-36 h-36 rounded-full bg-primary/10 border-2 border-primary flex flex-col items-center justify-center text-center shadow-lg">
                 <Search className="w-6 h-6 text-primary mb-1" />
                 <span className="text-xs font-bold text-primary font-body leading-tight px-3">
-                  Analisar Perfil da Cliente
+                  Analisar Perfil do Cliente Ideal
                 </span>
               </div>
-              {/* Vertical connectors */}
               <div className="w-0.5 h-6 bg-primary/30" />
               <div className="px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold font-body">
                 Social Selling
               </div>
             </div>
 
-            {/* Right branches */}
             <div className="space-y-5 pt-2">
               {rightBranches.map(b => (
                 <BranchColumn key={b.id} branch={b} side="right" />
@@ -131,13 +125,12 @@ const MindMapGuide = () => {
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
         <Zap className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-amber-700 font-body">
-          <strong>Link de contato não é assunto aleatório.</strong> É um ponto natural de aproximação que nasce da leitura do perfil.
+          <strong>Link de contato não é assunto aleatório.</strong> É um ponto natural de aproximação que nasce da leitura do perfil do seu cliente ideal.
         </p>
       </div>
 
       {/* Legend + Examples side by side */}
       <div className="grid md:grid-cols-2 gap-4">
-        {/* Legend */}
         <div className="bg-card border border-border rounded-xl overflow-hidden">
           <div className="p-3 border-b border-border bg-muted/20">
             <h3 className="text-xs font-bold text-foreground font-body flex items-center gap-2">
@@ -146,8 +139,8 @@ const MindMapGuide = () => {
           </div>
           <div className="divide-y divide-border">
             {[
-              { icon: <Eye className="w-3.5 h-3.5 text-blue-600" />, title: "O que observar", desc: "Bio, feed, stories, bastidores, família, equipe, reclamações" },
-              { icon: <Lightbulb className="w-3.5 h-3.5 text-amber-600" />, title: "O que pode significar", desc: "Sobrecarga, centralização, falta de processo, desejo por autonomia" },
+              { icon: <Eye className="w-3.5 h-3.5 text-blue-600" />, title: "O que observar", desc: "Bio, feed, stories, bastidores, família, equipe, desabafos" },
+              { icon: <Lightbulb className="w-3.5 h-3.5 text-amber-600" />, title: "O que pode significar", desc: "Sobrecarga, centralização, falta de processo, desejo de crescer" },
               { icon: <Heart className="w-3.5 h-3.5 text-rose-600" />, title: "Qual pode ser o link", desc: "Empatia, afinidade real, comentário contextual, elogio genuíno" },
             ].map((l, i) => (
               <div key={i} className="p-3 flex items-start gap-2">
@@ -161,7 +154,6 @@ const MindMapGuide = () => {
           </div>
         </div>
 
-        {/* Examples */}
         <div className="bg-card border border-border rounded-xl overflow-hidden">
           <div className="p-3 border-b border-border bg-muted/20">
             <h3 className="text-xs font-bold text-foreground font-body flex items-center gap-2">
@@ -184,7 +176,7 @@ const MindMapGuide = () => {
       <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 flex items-start gap-2">
         <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-rose-700 font-body">
-          Olhe o conteúdo para <strong>identificar pistas de aderência ao ICP</strong>, não como curiosidade.
+          Olhe o conteúdo para <strong>identificar pistas de aderência ao seu cliente ideal</strong>, não como curiosidade.
         </p>
       </div>
     </div>
