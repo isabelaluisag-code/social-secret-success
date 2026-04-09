@@ -225,7 +225,7 @@ const HelisseBastos = () => {
             <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="w-4 h-4" />
             </Link>
-            <img src={logoLegatto} alt="Legatto" className="h-6 w-auto" />
+            <img src={logoLegatto} alt="Legatto" className="h-10 w-auto" />
             <div>
               <p className="text-sm font-semibold text-foreground leading-tight font-body">Gestão de Social Selling</p>
               <p className="text-[11px] text-muted-foreground font-body">Helisse Bastos · Operacional: Rejane</p>
