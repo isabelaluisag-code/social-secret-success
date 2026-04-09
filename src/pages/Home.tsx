@@ -11,15 +11,8 @@ const menuItems = [
     color: "bg-primary/10 text-primary",
   },
   {
-    title: "Social Selling — Seguidores Março 2025",
-    description: "Guia de mensagens para abordagem de seguidores existentes no Instagram. Meta: 97 seguidores/dia.",
-    icon: MessageCircle,
-    href: "/guia-mensagens",
-    color: "bg-primary/10 text-primary",
-  },
-  {
-    title: "Social Selling — Helisse Bastos",
-    description: "Operacional da Rejane: 129 leads qualificados divididos em 5 dias com cadência personalizada e scripts editáveis.",
+    title: "Rotina de Social Selling",
+    description: "",
     icon: Users,
     href: "/helisse-bastos",
     color: "bg-accent/10 text-accent",
@@ -56,7 +49,7 @@ const Home = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground font-body">{item.title}</p>
-                <p className="text-xs text-muted-foreground font-body mt-0.5">{item.description}</p>
+                {item.description && <p className="text-xs text-muted-foreground font-body mt-0.5">{item.description}</p>}
               </div>
               <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
             </Link>
