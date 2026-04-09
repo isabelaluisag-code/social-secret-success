@@ -1,0 +1,68 @@
+/* Fonts loaded via index.html link preload */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 30 33% 97%;
+    --foreground: 192 80% 15%;
+    --card: 30 30% 99%;
+    --card-foreground: 192 80% 15%;
+    --popover: 30 30% 99%;
+    --popover-foreground: 192 80% 15%;
+    --primary: 192 80% 30%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 192 20% 93%;
+    --secondary-foreground: 192 60% 20%;
+    --muted: 192 15% 94%;
+    --muted-foreground: 192 10% 45%;
+    --accent: 192 50% 40%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 192 15% 88%;
+    --input: 192 15% 88%;
+    --ring: 192 80% 30%;
+    --radius: 0.75rem;
+    --sidebar-background: 192 15% 96%;
+    --sidebar-foreground: 192 60% 20%;
+    --sidebar-primary: 192 80% 30%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 192 15% 91%;
+    --sidebar-accent-foreground: 192 60% 20%;
+    --sidebar-border: 192 15% 88%;
+    --sidebar-ring: 192 80% 30%;
+    --coral: 192 80% 30%;
+    --coral-light: 192 40% 94%;
+    --coral-dark: 192 80% 22%;
+    --warm: 192 50% 40%;
+    --warm-light: 192 30% 93%;
+    --cream: 30 33% 97%;
+    --sage: 192 30% 55%;
+    --sage-light: 192 25% 94%;
+    font-family: 'DM Sans', sans-serif;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  h1, h2, h3, h4, h5 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Playfair Display', serif;
+  }
+  .font-body {
+    font-family: 'DM Sans', sans-serif;
+  }
+}
