@@ -1,8 +1,15 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, MessageCircle, Users } from "lucide-react";
+import { ArrowRight, MessageCircle, Users, BookOpen } from "lucide-react";
 import logoLegatto from "@/assets/logo-legatto.png";
 
 const menuItems = [
+  {
+    title: "Como Utilizar — Growman",
+    description: "Passo a passo para instalar a extensão Growman e encontrar seus clientes ideais no Instagram.",
+    icon: BookOpen,
+    href: "/como-utilizar",
+    color: "bg-primary/10 text-primary",
+  },
   {
     title: "Social Selling — Seguidores Março 2025",
     description: "Guia de mensagens para abordagem de seguidores existentes no Instagram. Meta: 97 seguidores/dia.",
