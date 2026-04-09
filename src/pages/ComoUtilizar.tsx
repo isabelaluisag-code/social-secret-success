@@ -225,6 +225,55 @@ const ComoUtilizar = () => {
             Puxar os <strong className="text-foreground">seguidores do seu concorrente</strong> também é uma jogada de mestre! 🎯 Esses seguidores já demonstraram interesse no tipo de serviço que você oferece, tornando-os leads altamente qualificados.
           </p>
         </div>
+
+        {/* Upload Section */}
+        <div className="bg-card border-2 border-dashed border-primary/30 rounded-xl p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+              <FileSpreadsheet className="w-5 h-5" />
+            </div>
+            <h2 className="text-lg font-bold text-foreground font-body">Hora da mágica! ✨</h2>
+          </div>
+          <p className="text-sm text-muted-foreground font-body leading-relaxed">
+            Após fazer a filtragem com a IA, <strong className="text-foreground">faça o upload da planilha aqui</strong> que a mágica irá acontecer!
+          </p>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            onChange={handleUpload}
+            className="hidden"
+          />
+
+          {uploadedFile ? (
+            <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-lg px-5 py-4">
+              <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-foreground font-body">Arquivo enviado!</p>
+                <p className="text-xs text-muted-foreground font-body">{uploadedFile}</p>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="w-full flex items-center justify-center gap-3 bg-primary text-primary-foreground px-6 py-4 rounded-lg text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-5 h-5" />
+                  Fazer upload da planilha
+                </>
+              )}
+            </button>
+          )}
+        </div>
       </main>
 
       <footer className="text-center py-4 text-xs text-muted-foreground border-t border-border font-body">
