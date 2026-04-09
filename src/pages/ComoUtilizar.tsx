@@ -1,11 +1,47 @@
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Download, Search, Target, Lightbulb, ExternalLink, Users, Instagram, MousePointerClick, Play, FileDown, Upload, Sparkles } from "lucide-react";
+import { ArrowLeft, Download, Search, Target, Lightbulb, ExternalLink, Users, Instagram, MousePointerClick, Play, FileDown, Upload, Sparkles, FileSpreadsheet, CheckCircle2, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import logoLegatto from "@/assets/logo-legatto.png";
 import growmanStep1 from "@/assets/growman-step1.png";
 import growmanStep2 from "@/assets/growman-step2.png";
 import growmanStep3 from "@/assets/growman-step3.png";
 
 const ComoUtilizar = () => {
+  const [uploading, setUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = [
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-excel",
+      "text/csv",
+    ];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Por favor, envie um arquivo Excel (.xlsx, .xls) ou CSV.");
+      return;
+    }
+
+    setUploading(true);
+    const fileName = `${Date.now()}_${file.name}`;
+    const { error } = await supabase.storage
+      .from("planilhas")
+      .upload(fileName, file);
+
+    if (error) {
+      toast.error("Erro ao enviar o arquivo. Tente novamente.");
+      console.error(error);
+    } else {
+      setUploadedFile(file.name);
+      toast.success("Planilha enviada com sucesso! 🎉");
+    }
+    setUploading(false);
+  };
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b border-border bg-card/90 backdrop-blur-md sticky top-0 z-50">
