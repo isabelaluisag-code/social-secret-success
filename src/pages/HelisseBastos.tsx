@@ -82,7 +82,9 @@ const DISCARD_OPTIONS: { value: DiscardReason; label: string }[] = [
 ];
 
 const SocialSelling = () => {
-  const [leads, setLeads] = useState<Lead[]>(loadLeadsFromLocal);
+  const { user } = useAuth();
+  const userId = user?.id || "";
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
@@ -105,29 +107,32 @@ const SocialSelling = () => {
   }, [leads]);
 
   useEffect(() => {
+    if (!userId) return;
     let cancelled = false;
-    loadLeadsFromDB().then(dbLeads => {
+    const localLeads = loadLeadsFromLocal(userId);
+    if (localLeads.length > 0) setLeads(localLeads);
+    loadLeadsFromDB(userId).then(dbLeads => {
       if (cancelled) return;
       if (dbLeads && dbLeads.length > 0) {
         setLeads(dbLeads);
-        saveLeadsToLocal(dbLeads);
+        saveLeadsToLocal(userId, dbLeads);
       }
       setDbLoaded(true);
     });
     return () => { cancelled = true; };
-  }, []);
+  }, [userId]);
 
   useEffect(() => setPage(0), [searchTerm, filterStatus, filterNicho]);
 
   const persistLeads = useCallback((updater: (prev: Lead[]) => Lead[]) => {
     setLeads((prev) => {
       const next = updater(prev);
-      saveLeadsToLocal(next);
+      saveLeadsToLocal(userId, next);
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = setTimeout(() => saveLeadsToDB(next), 500);
+      saveTimerRef.current = setTimeout(() => saveLeadsToDB(userId, next), 500);
       return next;
     });
-  }, []);
+  }, [userId]);
 
   const selectedLead = leads.find(l => l.id === selectedLeadId) || null;
 
