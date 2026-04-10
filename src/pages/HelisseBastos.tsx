@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -32,39 +33,40 @@ import * as XLSX from "xlsx";
 const RechartsCharts = lazy(() => import("@/components/LeadershipCharts"));
 
 const STORAGE_KEY = "social-selling-leads-v4";
-const DB_ROW_ID = "social-selling-generic";
 
-function loadLeadsFromLocal(): Lead[] {
+function getStorageKey(userId: string) { return STORAGE_KEY + "-" + userId; }
+
+function loadLeadsFromLocal(userId: string): Lead[] {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(getStorageKey(userId));
     if (stored) return JSON.parse(stored);
   } catch { /* ignore */ }
-  return initialLeads;
+  return [];
 }
 
-function saveLeadsToLocal(leads: Lead[]) {
+function saveLeadsToLocal(userId: string, leads: Lead[]) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(leads));
+    localStorage.setItem(getStorageKey(userId), JSON.stringify(leads));
   } catch { /* ignore */ }
 }
 
-async function loadLeadsFromDB(): Promise<Lead[] | null> {
+async function loadLeadsFromDB(userId: string): Promise<Lead[] | null> {
   try {
     const { data, error } = await supabase
       .from("leads_data")
       .select("data")
-      .eq("id", DB_ROW_ID)
+      .eq("id", userId)
       .maybeSingle();
     if (error || !data) return null;
     return data.data as unknown as Lead[];
   } catch { return null; }
 }
 
-async function saveLeadsToDB(leads: Lead[]) {
+async function saveLeadsToDB(userId: string, leads: Lead[]) {
   try {
     await supabase
       .from("leads_data")
-      .upsert({ id: DB_ROW_ID, data: leads as any, updated_at: new Date().toISOString() });
+      .upsert({ id: userId, data: leads as any, updated_at: new Date().toISOString() });
   } catch { /* ignore */ }
 }
 
@@ -80,7 +82,9 @@ const DISCARD_OPTIONS: { value: DiscardReason; label: string }[] = [
 ];
 
 const SocialSelling = () => {
-  const [leads, setLeads] = useState<Lead[]>(loadLeadsFromLocal);
+  const { user } = useAuth();
+  const userId = user?.id || "";
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
@@ -103,29 +107,32 @@ const SocialSelling = () => {
   }, [leads]);
 
   useEffect(() => {
+    if (!userId) return;
     let cancelled = false;
-    loadLeadsFromDB().then(dbLeads => {
+    const localLeads = loadLeadsFromLocal(userId);
+    if (localLeads.length > 0) setLeads(localLeads);
+    loadLeadsFromDB(userId).then(dbLeads => {
       if (cancelled) return;
       if (dbLeads && dbLeads.length > 0) {
         setLeads(dbLeads);
-        saveLeadsToLocal(dbLeads);
+        saveLeadsToLocal(userId, dbLeads);
       }
       setDbLoaded(true);
     });
     return () => { cancelled = true; };
-  }, []);
+  }, [userId]);
 
   useEffect(() => setPage(0), [searchTerm, filterStatus, filterNicho]);
 
   const persistLeads = useCallback((updater: (prev: Lead[]) => Lead[]) => {
     setLeads((prev) => {
       const next = updater(prev);
-      saveLeadsToLocal(next);
+      saveLeadsToLocal(userId, next);
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = setTimeout(() => saveLeadsToDB(next), 500);
+      saveTimerRef.current = setTimeout(() => saveLeadsToDB(userId, next), 500);
       return next;
     });
-  }, []);
+  }, [userId]);
 
   const selectedLead = leads.find(l => l.id === selectedLeadId) || null;
 
