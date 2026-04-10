@@ -33,39 +33,40 @@ import * as XLSX from "xlsx";
 const RechartsCharts = lazy(() => import("@/components/LeadershipCharts"));
 
 const STORAGE_KEY = "social-selling-leads-v4";
-const DB_ROW_ID = "social-selling-generic";
 
-function loadLeadsFromLocal(): Lead[] {
+function getStorageKey(userId: string) { return STORAGE_KEY + "-" + userId; }
+
+function loadLeadsFromLocal(userId: string): Lead[] {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(getStorageKey(userId));
     if (stored) return JSON.parse(stored);
   } catch { /* ignore */ }
-  return initialLeads;
+  return [];
 }
 
-function saveLeadsToLocal(leads: Lead[]) {
+function saveLeadsToLocal(userId: string, leads: Lead[]) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(leads));
+    localStorage.setItem(getStorageKey(userId), JSON.stringify(leads));
   } catch { /* ignore */ }
 }
 
-async function loadLeadsFromDB(): Promise<Lead[] | null> {
+async function loadLeadsFromDB(userId: string): Promise<Lead[] | null> {
   try {
     const { data, error } = await supabase
       .from("leads_data")
       .select("data")
-      .eq("id", DB_ROW_ID)
+      .eq("id", userId)
       .maybeSingle();
     if (error || !data) return null;
     return data.data as unknown as Lead[];
   } catch { return null; }
 }
 
-async function saveLeadsToDB(leads: Lead[]) {
+async function saveLeadsToDB(userId: string, leads: Lead[]) {
   try {
     await supabase
       .from("leads_data")
-      .upsert({ id: DB_ROW_ID, data: leads as any, updated_at: new Date().toISOString() });
+      .upsert({ id: userId, data: leads as any, updated_at: new Date().toISOString() });
   } catch { /* ignore */ }
 }
 
