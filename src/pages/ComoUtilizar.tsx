@@ -75,6 +75,21 @@ const ComoUtilizar = () => {
             Instalar extensão Growman
             <ExternalLink className="w-3.5 h-3.5 opacity-70" />
           </a>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="h-px w-8 bg-border flex-shrink-0" />
+            <span>Caso o Growman não funcione</span>
+            <span className="h-px w-8 bg-border flex-shrink-0" />
+          </div>
+          <a
+            href="https://chromewebstore.google.com/detail/igfollow-follower-export/pkafmmmfdgphkffldekomeaofhgickcg?hl=pt"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-secondary/80 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Instalar IGFollow (alternativa)
+            <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+          </a>
         </div>
 
         {/* Step 2 */}
