@@ -398,6 +398,27 @@ const SocialSelling = () => {
             <Button size="sm" onClick={() => setShowNewLead(true)} className="gap-1">
               <Plus className="w-4 h-4" /> Novo Lead
             </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" variant="destructive" className="gap-1 font-body">
+                  <Trash2 className="w-4 h-4" /> Excluir tudo
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Excluir todos os leads?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta ação não pode ser desfeita. Todos os {leads.length} leads e suas cadências serão removidos permanentemente.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={deleteAllLeads} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Sim, excluir tudo
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </header>
