@@ -8,8 +8,12 @@ import {
   ArrowLeft, Users, CheckCircle2, Clock, AlertCircle, Search, Plus, X,
   ExternalLink, ChevronRight, BarChart3, Filter, Eye, ChevronDown, Columns3, BookOpen,
   Check, Copy, MessageSquare, Target, TrendingUp, XCircle, Send, CalendarIcon, Save,
-  Upload, FileSpreadsheet, Sparkles,
+  Upload, FileSpreadsheet, Sparkles, Trash2,
 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -263,6 +267,15 @@ const SocialSelling = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const deleteAllLeads = async () => {
+    setLeads([]);
+    try { localStorage.removeItem(getStorageKey(userId)); } catch { /* ignore */ }
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    await saveLeadsToDB(userId, []);
+    setSelectedLeadId(null);
+    toast.success("Todos os leads foram excluídos.");
+  };
+
   // Empty state
   const isEmpty = leads.length === 0;
 
@@ -385,6 +398,27 @@ const SocialSelling = () => {
             <Button size="sm" onClick={() => setShowNewLead(true)} className="gap-1">
               <Plus className="w-4 h-4" /> Novo Lead
             </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" variant="destructive" className="gap-1 font-body">
+                  <Trash2 className="w-4 h-4" /> Excluir tudo
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Excluir todos os leads?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta ação não pode ser desfeita. Todos os {leads.length} leads e suas cadências serão removidos permanentemente.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={deleteAllLeads} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Sim, excluir tudo
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </header>
