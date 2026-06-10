@@ -267,6 +267,15 @@ const SocialSelling = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const deleteAllLeads = async () => {
+    setLeads([]);
+    try { localStorage.removeItem(getStorageKey(userId)); } catch { /* ignore */ }
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    await saveLeadsToDB(userId, []);
+    setSelectedLeadId(null);
+    toast.success("Todos os leads foram excluídos.");
+  };
+
   // Empty state
   const isEmpty = leads.length === 0;
 
