@@ -276,6 +276,12 @@ const SocialSelling = () => {
     toast.success("Todos os leads foram excluídos.");
   };
 
+  const deleteLead = (id: string) => {
+    setLeads(prev => prev.filter(l => l.id !== id));
+    setSelectedLeadId(curr => (curr === id ? null : curr));
+    toast.success("Lead excluído.");
+  };
+
   // Empty state
   const isEmpty = leads.length === 0;
 
