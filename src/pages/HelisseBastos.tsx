@@ -8,8 +8,12 @@ import {
   ArrowLeft, Users, CheckCircle2, Clock, AlertCircle, Search, Plus, X,
   ExternalLink, ChevronRight, BarChart3, Filter, Eye, ChevronDown, Columns3, BookOpen,
   Check, Copy, MessageSquare, Target, TrendingUp, XCircle, Send, CalendarIcon, Save,
-  Upload, FileSpreadsheet, Sparkles,
+  Upload, FileSpreadsheet, Sparkles, Trash2,
 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
