@@ -276,6 +276,12 @@ const SocialSelling = () => {
     toast.success("Todos os leads foram excluídos.");
   };
 
+  const deleteLead = (id: string) => {
+    setLeads(prev => prev.filter(l => l.id !== id));
+    setSelectedLeadId(curr => (curr === id ? null : curr));
+    toast.success("Lead excluído.");
+  };
+
   // Empty state
   const isEmpty = leads.length === 0;
 
@@ -521,7 +527,7 @@ const SocialSelling = () => {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">
-                      {["Nome","@Perfil","Nicho","Status","Prioridade","Resultado"].map(h => (
+                      {["Nome","@Perfil","Nicho","Status","Prioridade","Resultado","Ações"].map(h => (
                         <th key={h} className="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground font-body">{h}</th>
                       ))}
                     </tr>
@@ -551,6 +557,29 @@ const SocialSelling = () => {
                             </span>
                           </td>
                           <td className="px-3 py-2.5 font-body text-muted-foreground text-xs max-w-[120px] truncate">{lead.resultado || "—"}</td>
+                          <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10" title="Excluir lead">
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Excluir este lead?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    {lead.nome} será removido permanentemente. Esta ação não pode ser desfeita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => deleteLead(lead.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                    Sim, excluir
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </td>
                         </tr>
                       );
                     })}
