@@ -32,6 +32,7 @@ import {
 } from "@/data/social-selling-data";
 import logoLegatto from "@/assets/logo-legatto.png";
 import MindMapGuide from "@/components/MindMapGuide";
+import DayPlaybookCard from "@/components/DayPlaybookCard";
 import * as XLSX from "xlsx";
 
 const RechartsCharts = lazy(() => import("@/components/LeadershipCharts"));
