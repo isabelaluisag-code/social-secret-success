@@ -32,6 +32,7 @@ import {
 } from "@/data/social-selling-data";
 import logoLegatto from "@/assets/logo-legatto.png";
 import MindMapGuide from "@/components/MindMapGuide";
+import DayPlaybookCard from "@/components/DayPlaybookCard";
 import * as XLSX from "xlsx";
 
 const RechartsCharts = lazy(() => import("@/components/LeadershipCharts"));
@@ -541,7 +542,23 @@ const SocialSelling = () => {
                           onClick={() => setSelectedLeadId(lead.id)}
                           className="border-b border-border last:border-0 hover:bg-muted/30 cursor-pointer transition-colors"
                         >
-                          <td className="px-3 py-2.5 font-body font-medium text-foreground max-w-[200px] truncate">{lead.nome}</td>
+                          <td className="px-3 py-2.5 font-body font-medium text-foreground max-w-[200px] truncate">
+                            {lead.linkPerfil || lead.instagram ? (
+                              <a
+                                href={lead.linkPerfil || `https://www.instagram.com/${lead.instagram}/`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="hover:text-primary hover:underline underline-offset-2 inline-flex items-center gap-1"
+                                title="Abrir Instagram em nova aba"
+                              >
+                                <span className="truncate">{lead.nome}</span>
+                                <ExternalLink className="w-3 h-3 opacity-60 shrink-0" />
+                              </a>
+                            ) : (
+                              lead.nome
+                            )}
+                          </td>
                           <td className="px-3 py-2.5 font-body text-muted-foreground">@{lead.instagram}</td>
                           <td className="px-3 py-2.5">
                             <Badge variant="outline" className="font-body text-[11px]">{lead.nicho}</Badge>
@@ -985,6 +1002,9 @@ function LeadDetail({ lead, onUpdate, onCopy, copiedId }: {
                 </button>
                 {isOpen && (
                   <div className="px-3 pb-3 space-y-3 border-t border-border pt-2">
+                    {/* Playbook do dia */}
+                    <DayPlaybookCard day={day.day} />
+
                     {/* Data de execução */}
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] text-muted-foreground font-body">Data de execução:</span>
