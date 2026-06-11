@@ -1002,6 +1002,9 @@ function LeadDetail({ lead, onUpdate, onCopy, copiedId }: {
                 </button>
                 {isOpen && (
                   <div className="px-3 pb-3 space-y-3 border-t border-border pt-2">
+                    {/* Playbook do dia */}
+                    <DayPlaybookCard day={day.day} />
+
                     {/* Data de execução */}
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] text-muted-foreground font-body">Data de execução:</span>
